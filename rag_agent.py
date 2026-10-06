@@ -1,16 +1,45 @@
 from dotenv import load_dotenv
 import json
+import os
 import time
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 import tempfile
 import streamlit as st
+from streamlit.errors import StreamlitSecretNotFoundError
 
 load_dotenv()
-import os
-GROQ_API_KEY = os.getenv("GROQ_API_KEY") or st.secrets["GROQ_API_KEY"]
-SERPER_API_KEY = os.getenv("SERPER_API_KEY") or st.secrets["SERPER_API_KEY"]
-HUGGINGFACEHUB_API_TOKEN = os.getenv("HUGGINGFACEHUB_API_TOKEN") or st.secrets["HUGGINGFACEHUB_API_TOKEN"]
+
+required_secret_names = (
+    "GROQ_API_KEY",
+    "SERPER_API_KEY",
+    "HUGGINGFACEHUB_API_TOKEN",
+)
+secrets = {}
+missing_secrets = []
+for secret_name in required_secret_names:
+    secret_value = os.getenv(secret_name)
+    if not secret_value:
+        try:
+            secret_value = st.secrets.get(secret_name)
+        except StreamlitSecretNotFoundError:
+            secret_value = None
+    if secret_value:
+        secrets[secret_name] = secret_value
+    else:
+        missing_secrets.append(secret_name)
+
+if missing_secrets:
+    st.error(
+        "Missing required secrets: "
+        + ", ".join(missing_secrets)
+        + ". Add them in your Streamlit app's Settings > Secrets."
+    )
+    st.stop()
+
+GROQ_API_KEY = secrets["GROQ_API_KEY"]
+SERPER_API_KEY = secrets["SERPER_API_KEY"]
+HUGGINGFACEHUB_API_TOKEN = secrets["HUGGINGFACEHUB_API_TOKEN"]
 
 # Load PDF files
 from langchain_community.document_loaders import PyMuPDFLoader
