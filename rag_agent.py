@@ -4,6 +4,7 @@ import time
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 import tempfile
+import streamlit as st
 
 load_dotenv()
 import os
@@ -24,7 +25,6 @@ from langchain_community.vectorstores import InMemoryVectorStore
 from langchain.tools import tool
 from langchain.agents import create_agent 
 from langgraph.checkpoint.memory import InMemorySaver
-import streamlit as st
 
 
 ## data in st sessions 
